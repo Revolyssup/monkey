@@ -32,7 +32,8 @@ func (l *Lexer) NextToken() token.Token {
 	case '}':
 		tok = newToken(token.RIGHT_BRACE, l.ch)
 	case 0:
-		tok = newToken(token.EOF, l.ch)
+		tok.Literal = ""
+		tok.Type = token.EOF
 	default: //handling identifiers
 		if l.isLetter(l.ch) {
 			tok.Literal = l.readIdentifier()
@@ -41,6 +42,7 @@ func (l *Lexer) NextToken() token.Token {
 		} else if l.isNumber(l.ch) {
 			tok.Literal = l.readNumber()
 			tok.Type = token.INTEGER
+			return tok
 		} else {
 			tok = newToken(token.ILLEGAL, l.ch)
 		}
@@ -93,7 +95,7 @@ func (l *Lexer) isLetter(ch byte) bool {
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z'
 }
 func (l *Lexer) isNumber(ch byte) bool {
-	return 0 <= ch && ch <= 9
+	return '0' <= ch && ch <= '9'
 }
 func (l *Lexer) skipWhitespace() {
 	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
