@@ -8,18 +8,35 @@ type Token struct {
 }
 
 var keywords = map[string]TokenType{
-	"fn":  FUNCTION,
-	"let": LET,
+	"fn":     FUNCTION,
+	"let":    LET,
+	"true":   TRUE,
+	"false":  FALSE,
+	"if":     IF,
+	"else":   ELSE,
+	"return": RETURN,
 }
 
 const (
 	//keywords
 	LET      = "LET"
 	FUNCTION = "FUNCTION"
-
+	TRUE     = "TRUE"
+	FALSE    = "FALSE"
+	RETURN   = "RETURN"
+	IF       = "IF"
+	ELSE     = "ELSE"
 	//Operators
-	PLUS   = "+"
-	ASSIGN = "="
+	PLUS      = "+"
+	MINUS     = "-"
+	SLASH     = "/"
+	ASTERIK   = "*"
+	LESS_THAN = "<"
+	GRTR_THAN = ">"
+	BANG      = "!"
+	ASSIGN    = "="
+	EQUAL     = "=="
+	NOT_EQUAL = "!="
 	//delimiters
 	COMMA     = ","
 	SEMICOLON = ";"
