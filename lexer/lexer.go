@@ -61,7 +61,7 @@ func (l *Lexer) NextToken() token.Token {
 	default: //handling identifiers
 		if l.isLetter(l.ch) {
 			tok.Literal = l.readIdentifier()
-			tok.Type = token.IdentOrKeyword(tok.Literal)
+			tok.Type = token.IdentOrKeyword(tok.Literal) //check if the given literal exists on keyword map
 			return tok
 		} else if l.isNumber(l.ch) {
 			tok.Literal = l.readNumber()
