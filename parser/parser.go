@@ -56,11 +56,14 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 	if !p.expectPeek(token.IDENTIFIER) {
 		return nil
 	}
+
 	letstmt.Name = &ast.Identifier{Token: p.currToken, Value: p.currToken.Literal}
+
 	if !p.expectPeek(token.ASSIGN) {
 		return nil
 	}
-	if !p.expectCurr(token.SEMICOLON) {
+
+	for p.currToken.Type != token.SEMICOLON {
 		p.NextToken()
 	}
 
