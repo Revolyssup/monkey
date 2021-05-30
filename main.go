@@ -13,7 +13,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("%s Welcome to monkey\n", user.Username)
-	fmt.Printf("STARTING REPL SESSION\n")
+	fmt.Printf("Welcome to monkey %s\n", user.Username)
+	fmt.Printf("STARTING REPL SESSION...\n")
 	repl.StartRepl(os.Stdin, os.Stdout)
 }

@@ -48,7 +48,7 @@ func (i *Identifier) TokenLiteral() string {
 
 /***LET STATEMENT****/
 type LetStatement struct {
-	Token token.Token
+	Token token.Token //LET token
 	Name  *Identifier
 	Value Expression
 }
@@ -59,4 +59,17 @@ func (ls *LetStatement) stateNode() {}
 //every statement is also a node and hence implements token literal method.
 func (ls *LetStatement) TokenLiteral() string {
 	return ls.Token.Literal
+}
+
+/*****RETURN STATEMENT*******/
+
+type ReturnStatement struct {
+	Token       token.Token //RETURN token
+	ReturnValue Expression
+}
+
+func (rs *ReturnStatement) stateNode() {}
+
+func (rs *ReturnStatement) TokenLiteral() string {
+	return rs.Token.Literal
 }

@@ -33,11 +33,10 @@ func testLetStatement(t *testing.T, s ast.Statement, name string) bool {
 	}
 	return true
 }
-
 func TestLetStatement(t *testing.T) {
 	input := `
 		let x = 5;
-		let  = 10;
+		let y = 10;
 		let foobar = 838383;
 		`
 	lexer := lexer.New(input)
@@ -63,13 +62,36 @@ func TestLetStatement(t *testing.T) {
 
 	for i, tt := range tests {
 		stmt := program.Statements[i]
-		fmt.Println("####", stmt)
+		fmt.Println(i+1, stmt.TokenLiteral(), "statement")
 		if !testLetStatement(t, stmt, tt.expectedIdentifier) {
 			return
 		}
 	}
 }
 
+func TestReturnStatement(t *testing.T) {
+	input := `
+	return ass();
+	return 1;
+	return 2;`
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+
+	checkParserErrors(t, p)
+	for _, stmt := range program.Statements {
+		rstmt, ok := stmt.(*ast.ReturnStatement)
+		if !ok {
+			t.Errorf("statement not ast.Returnstatement, got=%s", stmt)
+			continue
+		}
+		if rstmt.TokenLiteral() != "return" {
+			t.Errorf("statement not ast.Returnstatement, got=%q", rstmt.TokenLiteral())
+		}
+	}
+
+}
 func checkParserErrors(t *testing.T, p *Parser) {
 	errors := p.Errors()
 	if len(errors) == 0 {

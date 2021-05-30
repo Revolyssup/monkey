@@ -55,6 +55,10 @@ func (p *Parser) parseStatement() ast.Statement {
 		{
 			return p.parseLetStatement()
 		}
+	case token.RETURN:
+		{
+			return p.parseReturnStatement()
+		}
 	default:
 		{
 			return nil
@@ -80,6 +84,15 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 	}
 
 	return letstmt
+}
+
+func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
+	retstmt := &ast.ReturnStatement{Token: p.currToken}
+
+	for p.currToken.Type != token.SEMICOLON {
+		p.NextToken()
+	}
+	return retstmt
 }
 
 //utilities
