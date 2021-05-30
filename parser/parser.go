@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"fmt"
+
 	"github.com/Revolyssup/monkey/ast"
 	"github.com/Revolyssup/monkey/lexer"
 	"github.com/Revolyssup/monkey/token"
@@ -10,12 +12,14 @@ type Parser struct {
 	l         *lexer.Lexer
 	currToken token.Token
 	peekToken token.Token
+	errors    []string
 }
 
 func New(l *lexer.Lexer) *Parser {
-	p := &Parser{l: l}
+	p := &Parser{l: l, errors: []string{}}
 	p.NextToken()
 	p.NextToken()
+
 	return p
 }
 
@@ -37,7 +41,14 @@ func (p *Parser) ParseProgram() *ast.Program {
 	}
 	return program
 }
+func (p *Parser) Errors() []string {
+	return p.errors
+}
 
+func (p *Parser) peekErrors(t token.TokenType) {
+	msg := fmt.Sprintf("Expected token type %s. Got %s instead", t, p.peekToken.Type)
+	p.errors = append(p.errors, msg)
+}
 func (p *Parser) parseStatement() ast.Statement {
 	switch p.currToken.Type {
 	case token.LET:
@@ -51,6 +62,7 @@ func (p *Parser) parseStatement() ast.Statement {
 	}
 }
 
+//parsing different types of statements.
 func (p *Parser) parseLetStatement() *ast.LetStatement {
 	letstmt := &ast.LetStatement{Token: p.currToken}
 	if !p.expectPeek(token.IDENTIFIER) {
@@ -76,6 +88,7 @@ func (p *Parser) expectPeek(t token.TokenType) bool {
 		p.NextToken()
 		return true
 	}
+	p.peekErrors(t)
 	return false
 }
 
