@@ -31,20 +31,57 @@ const (
 	LOWEST
 	EQUALS      // ==
 	LESSGREATER // ><
-	SUM         // +
+	SUMSUB      // +
 	PRODUCT     // *
 	PREFIX      // -X and !X
 	CALL        // func(x)
 )
 
+//mapping each token to its appropriate precedence
+var precedence = map[token.TokenType]int{
+	token.EQUAL:     EQUALS,
+	token.NOT_EQUAL: EQUALS,
+	token.LESS_THAN: LESSGREATER,
+	token.GRTR_THAN: LESSGREATER,
+	token.MINUS:     SUMSUB,
+	token.PLUS:      SUMSUB,
+	token.SLASH:     PRODUCT,
+	token.ASTERIK:   PRODUCT,
+	token.BANG:      PREFIX,
+}
+
+//functins to compare precedences of tokens
+func (p *Parser) currPrecedence() int {
+	if p, ok := precedence[p.currToken.Type]; ok {
+		return p
+	}
+	return LOWEST
+}
+func (p *Parser) peekPrecedence() int {
+	if p, ok := precedence[p.peekToken.Type]; ok {
+		return p
+	}
+	return LOWEST
+}
+
 //Parsing expressions
 func (p *Parser) parseExpression(precedence int) ast.Expression {
 	prefix := p.prefixParsefuncns[p.currToken.Type]
 	if prefix == nil {
+		p.noPrefixParseFnError(p.currToken.Type)
 		return nil
 	}
 
 	leftExp := prefix()
+
+	if p.peekToken.Type != token.SEMICOLON && p.peekPrecedence() > precedence {
+		infix := p.infixParsefuncns[p.peekToken.Type]
+		if infix == nil {
+			return leftExp
+		}
+		p.NextToken()
+		leftExp = infix(leftExp)
+	}
 	return leftExp
 }
 
@@ -57,6 +94,19 @@ func New(l *lexer.Lexer) *Parser {
 
 	p.registerPrefixParse(token.IDENTIFIER, p.parseIdentifier)
 	p.registerPrefixParse(token.INTEGER, p.parseIntegerLiteral)
+	p.registerPrefixParse(token.BANG, p.parsePrefixExpression)
+	p.registerPrefixParse(token.MINUS, p.parsePrefixExpression)
+
+	p.infixParsefuncns = make(map[token.TokenType]infixParsefunc)
+	p.registerInfixParse(token.PLUS, p.parseInfixExpression)
+	p.registerInfixParse(token.MINUS, p.parseInfixExpression)
+	p.registerInfixParse(token.SLASH, p.parseInfixExpression)
+	p.registerInfixParse(token.ASTERIK, p.parseInfixExpression)
+	p.registerInfixParse(token.EQUAL, p.parseInfixExpression)
+	p.registerInfixParse(token.NOT_EQUAL, p.parseInfixExpression)
+	p.registerInfixParse(token.LESS_THAN, p.parseInfixExpression)
+	p.registerInfixParse(token.GRTR_THAN, p.parseInfixExpression)
+
 	return p
 }
 
@@ -188,4 +238,24 @@ func (p *Parser) parseIntegerLiteral() ast.Expression {
 	}
 	intexp.Value = val
 	return intexp
+}
+
+func (p *Parser) parsePrefixExpression() ast.Expression {
+	pexp := &ast.PrefixExpression{Token: p.currToken, Operator: p.currToken.Literal}
+
+	p.NextToken()
+	pexp.RightExpression = p.parseExpression(PREFIX)
+	return pexp
+}
+func (p *Parser) noPrefixParseFnError(t token.TokenType) {
+	msg := fmt.Sprintf("no prefix parse function for %s found", t)
+	p.errors = append(p.errors, msg)
+}
+
+func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
+	iexp := &ast.InfixExpression{Token: p.currToken, LeftExpression: left, Operator: p.currToken.Literal}
+	precedence := p.currPrecedence()
+	p.NextToken()
+	iexp.RightExpression = p.parseExpression(precedence)
+	return iexp
 }
