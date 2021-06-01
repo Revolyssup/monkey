@@ -48,6 +48,7 @@ func (p *Program) String() string {
 	return out.String()
 }
 
+/**Expressions will have- Identifiers/ Integer Literals**/
 //Identifiers are token which hold some string like x,y,z...
 type Identifier struct {
 	Token token.Token
@@ -59,9 +60,22 @@ func (i *Identifier) expNode() {}
 func (i *Identifier) TokenLiteral() string {
 	return i.Token.Literal
 }
-
 func (i *Identifier) String() string {
 	return i.Value
+}
+
+/***Integer Literal*/
+type IntegerLiteral struct {
+	Token token.Token
+	Value int64
+}
+
+func (i *IntegerLiteral) expNode() {}
+func (i *IntegerLiteral) TokenLiteral() string {
+	return i.Token.Literal
+}
+func (i *IntegerLiteral) String() string {
+	return i.Token.Literal
 }
 
 /***LET STATEMENT****/

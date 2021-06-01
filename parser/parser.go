@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/Revolyssup/monkey/ast"
 	"github.com/Revolyssup/monkey/lexer"
@@ -55,6 +56,7 @@ func New(l *lexer.Lexer) *Parser {
 	//registering parseExpressinoFunctions
 
 	p.registerPrefixParse(token.IDENTIFIER, p.parseIdentifier)
+	p.registerPrefixParse(token.INTEGER, p.parseIntegerLiteral)
 	return p
 }
 
@@ -173,4 +175,17 @@ func (p *Parser) registerInfixParse(t token.TokenType, f infixParsefunc) {
 
 func (p *Parser) parseIdentifier() ast.Expression { //For token.IDENT
 	return &ast.Identifier{Token: p.currToken, Value: p.currToken.Literal}
+}
+
+func (p *Parser) parseIntegerLiteral() ast.Expression {
+	intexp := &ast.IntegerLiteral{Token: p.currToken}
+	val, err := strconv.ParseInt(p.currToken.Literal, 0, 64)
+
+	if err != nil {
+		msg := fmt.Sprintf("Could not parse %q as int64", intexp)
+		p.errors = append(p.errors, msg)
+		return nil
+	}
+	intexp.Value = val
+	return intexp
 }

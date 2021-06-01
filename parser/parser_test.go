@@ -93,7 +93,7 @@ func TestReturnStatement(t *testing.T) {
 
 }
 
-func TestExpressionStatement(t *testing.T) {
+func TestExpression_IDENTIFIER_Statement(t *testing.T) {
 	input := `ident;`
 
 	l := lexer.New(input)
@@ -121,6 +121,29 @@ func TestExpressionStatement(t *testing.T) {
 			identstmt.TokenLiteral())
 	}
 
+}
+
+func TestExpression_INTEGER_LITERAL_Statement(t *testing.T) {
+	input := `5;`
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.statements[0] is not ast.ExpressionStatement. got = %T", program.Statements[0])
+	}
+
+	//testing for integer literal
+	intstmt, ok := stmt.Expression.(*ast.IntegerLiteral)
+	if !ok {
+		t.Fatalf("Expected ast.Integer, got = %T", intstmt)
+	}
+
+	if intstmt.Value != 5 {
+		t.Fatalf("Expected 5, got = %q", intstmt.Value)
+	}
 }
 func checkParserErrors(t *testing.T, p *Parser) {
 	errors := p.Errors()
