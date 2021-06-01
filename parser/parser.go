@@ -8,18 +8,53 @@ import (
 	"github.com/Revolyssup/monkey/token"
 )
 
+//To parse expressions using pratt parsing. Based on what type of expression that is, we will define different functins. Broadly they will be in two categories:
+type (
+	infixParsefunc  func(ast.Expression) ast.Expression //It takes in the expression before the operator/token
+	prefixParsefunc func() ast.Expression
+)
+
 type Parser struct {
 	l         *lexer.Lexer
 	currToken token.Token
 	peekToken token.Token
 	errors    []string
+	//Each token type will have some parse function associated with it.
+	infixParsefuncns  map[token.TokenType]infixParsefunc
+	prefixParsefuncns map[token.TokenType]prefixParsefunc
+}
+
+// These are the precedence of operators which would be passed in function call to specific parseExpression functions.
+const (
+	_ int = iota
+	LOWEST
+	EQUALS      // ==
+	LESSGREATER // ><
+	SUM         // +
+	PRODUCT     // *
+	PREFIX      // -X and !X
+	CALL        // func(x)
+)
+
+//Parsing expressions
+func (p *Parser) parseExpression(precedence int) ast.Expression {
+	prefix := p.prefixParsefuncns[p.currToken.Type]
+	if prefix == nil {
+		return nil
+	}
+
+	leftExp := prefix()
+	return leftExp
 }
 
 func New(l *lexer.Lexer) *Parser {
 	p := &Parser{l: l, errors: []string{}}
 	p.NextToken()
 	p.NextToken()
+	p.prefixParsefuncns = make(map[token.TokenType]prefixParsefunc)
+	//registering parseExpressinoFunctions
 
+	p.registerPrefixParse(token.IDENTIFIER, p.parseIdentifier)
 	return p
 }
 
@@ -61,12 +96,13 @@ func (p *Parser) parseStatement() ast.Statement {
 		}
 	default:
 		{
-			return nil
+			return p.parseExpressionStatement()
 		}
 	}
 }
 
 //parsing different types of statements.
+
 func (p *Parser) parseLetStatement() *ast.LetStatement {
 	letstmt := &ast.LetStatement{Token: p.currToken}
 	if !p.expectPeek(token.IDENTIFIER) {
@@ -95,6 +131,18 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	return retstmt
 }
 
+//Parsing expressionns using pratt parser technique.
+func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
+	stmt := &ast.ExpressionStatement{Token: p.currToken}
+
+	stmt.Expression = p.parseExpression(LOWEST)
+
+	if p.expectPeek(token.SEMICOLON) { //Semicolon is not mandatory
+		p.NextToken()
+	}
+	return stmt
+}
+
 //utilities
 func (p *Parser) expectPeek(t token.TokenType) bool {
 	if p.peekToken.Type == t { //good to go
@@ -111,4 +159,18 @@ func (p *Parser) expectCurr(t token.TokenType) bool {
 		return true
 	}
 	return false
+}
+
+func (p *Parser) registerPrefixParse(t token.TokenType, f prefixParsefunc) {
+	p.prefixParsefuncns[t] = f
+}
+
+func (p *Parser) registerInfixParse(t token.TokenType, f infixParsefunc) {
+	p.infixParsefuncns[t] = f
+}
+
+// different types of parseExpressionfunc based on token type
+
+func (p *Parser) parseIdentifier() ast.Expression { //For token.IDENT
+	return &ast.Identifier{Token: p.currToken, Value: p.currToken.Literal}
 }
