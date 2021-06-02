@@ -402,6 +402,18 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 			"!(true == true)",
 			"(!(true == true))",
 		},
+		{
+			"a + add(b * c) + d",
+			"((a + add((b * c))) + d)",
+		},
+		{
+			"add(a, b, 1, 2 * 3, 4 + 5, add(6, 7 * 8))",
+			"add(a, b, 1, (2 * 3), (4 + 5), add(6, (7 * 8)))",
+		},
+		{
+			"add(a + b + c * d / f + g)",
+			"add((((a + b) + ((c * d) / f)) + g))",
+		},
 	}
 	for _, tt := range tests {
 		l := lexer.New(tt.input)
@@ -449,4 +461,41 @@ func TestIfExpression(t *testing.T) {
 	if exp.AltStmt == nil {
 		t.Errorf("exp.Alternative.Statements was  nil. got=%+v", exp.AltStmt)
 	}
+}
+
+func TestFunctionLiteralParsing(t *testing.T) {
+	input := `fn(x, y) { x + y; }`
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+	if len(program.Statements) != 1 {
+		t.Fatalf("program.Body does not contain %d statements. got=%d\n",
+			1, len(program.Statements))
+	}
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not ast.ExpressionStatement. got=%T", program.Statements[0])
+	}
+	function, ok := stmt.Expression.(*ast.FunctionLiteral)
+	if !ok {
+		t.Fatalf("stmt.Expression is not ast.FunctionLiteral. got=%T",
+			stmt.Expression)
+	}
+	if len(function.Params) != 2 {
+		t.Fatalf("function literal parameters wrong. want 2, got=%d\n",
+			len(function.Params))
+	}
+	testLiteralExpression(t, function.Params[0], "x")
+	testLiteralExpression(t, function.Params[1], "y")
+	if len(function.Body.Stmts) != 1 {
+		t.Fatalf("function.Body.Statements has not 1 statements. got=%d\n",
+			len(function.Body.Stmts))
+	}
+	// bodyStmt, ok := function.Body.Stmts[0].(*ast.ExpressionStatement)
+	// if !ok {
+	// 	t.Fatalf("function body stmt is not ast.ExpressionStatement. got=%T",
+	// 		function.Body.Stmts[0])
+	// }
+	// testInfixExpression(t, bodyStmt.Expression, "x", "+", "y")
 }

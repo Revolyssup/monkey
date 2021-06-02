@@ -2,6 +2,7 @@ package ast
 
 import (
 	"bytes"
+	"strings"
 
 	"github.com/Revolyssup/monkey/token"
 )
@@ -250,5 +251,59 @@ func (ife *IfExpression) String() string {
 		out.WriteString(" else ")
 		out.WriteString(ife.AltStmt.String())
 	}
+	return out.String()
+}
+
+//Function Literalss fn(params){body}
+type FunctionLiteral struct {
+	Token  token.Token //fn
+	Params []*Identifier
+	Body   *BlockStatement
+}
+
+func (fl *FunctionLiteral) expNode() {}
+func (fl *FunctionLiteral) TokenLiteral() string {
+	return fl.Token.Literal
+}
+
+func (fl *FunctionLiteral) String() string {
+	var out bytes.Buffer
+	out.WriteString("fn")
+	params := []string{}
+	for _, p := range fl.Params {
+		params = append(params, p.String())
+	}
+	out.WriteString("(")
+	out.WriteString(strings.Join(params, ","))
+	out.WriteString(")")
+
+	out.WriteString(fl.Body.String())
+	return out.String()
+}
+
+//Function calls- <expression>(args). expression can be either an identifier pointing to a function literal or a function literal itself.And args is also expression.
+//We can have nested funciton literals inside of out function call as arguments.
+
+type FunctionCall struct {
+	Token     token.Token
+	Function  Expression
+	Arguments []Expression
+}
+
+func (fc *FunctionCall) expNode() {}
+func (fc *FunctionCall) TokenLiteral() string {
+	return fc.Token.Literal
+}
+
+func (fc *FunctionCall) String() string {
+	var out bytes.Buffer
+	out.WriteString(fc.Function.String())
+	out.WriteString("(")
+	args := []string{}
+	for _, arg := range fc.Arguments {
+		args = append(args, arg.String())
+	}
+	out.WriteString(strings.Join(args, ", "))
+	out.WriteString(")")
 	return out.String()
 }

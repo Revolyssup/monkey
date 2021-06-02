@@ -49,7 +49,7 @@ var precedence = map[token.TokenType]int{
 	token.ASTERIK:       PRODUCT,
 	token.BANG:          PREFIX,
 	token.RIGHT_BRACKET: LOWEST,
-	// token.LEFT_BRACKET: CALL,
+	token.LEFT_BRACKET:  CALL,
 }
 
 //functins to compare precedences of tokens
@@ -123,6 +123,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefixParse(token.MINUS, p.parsePrefixExpression)
 	p.registerPrefixParse(token.LEFT_BRACKET, p.parseGroupedExpression)
 	p.registerPrefixParse(token.IF, p.parseIfExpression)
+	p.registerPrefixParse(token.FUNCTION, p.parseFunctionLiterals)
 
 	p.registerInfixParse(token.PLUS, p.parseInfixExpression)
 	p.registerInfixParse(token.MINUS, p.parseInfixExpression)
@@ -132,7 +133,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerInfixParse(token.NOT_EQUAL, p.parseInfixExpression)
 	p.registerInfixParse(token.LESS_THAN, p.parseInfixExpression)
 	p.registerInfixParse(token.GRTR_THAN, p.parseInfixExpression)
-
+	p.registerInfixParse(token.LEFT_BRACKET, p.parseFunctionCall)
 	return p
 }
 
@@ -295,7 +296,7 @@ func (p *Parser) parseGroupedExpression() ast.Expression {
 }
 
 //Parsing Blocks
-func (p *Parser) parseBlockStatements() *ast.BlockStatement {
+func (p *Parser) parseBlockStatements() *ast.BlockStatement { //Will enter with currToken at `{`
 	bs := &ast.BlockStatement{Token: p.currToken}
 	bs.Stmts = []ast.Statement{}
 
@@ -308,7 +309,7 @@ func (p *Parser) parseBlockStatements() *ast.BlockStatement {
 		}
 		p.NextToken()
 	}
-	return bs
+	return bs //Exit with currToken either `}` or file ends
 }
 
 //IF_ELSE are expressions in monkey as they produce a value. Hence, if (x>3) 2; is equivalent to if (x>3) return 2;
@@ -338,4 +339,72 @@ func (p *Parser) parseIfExpression() ast.Expression {
 		ife.AltStmt = p.parseBlockStatements()
 	}
 	return ife
+}
+
+//Parsing functino literals.Function declarations in go are just like expressions. fn(..params){body}
+func (p *Parser) parseFunctionLiterals() ast.Expression {
+	fl := &ast.FunctionLiteral{Token: p.currToken}
+	if p.peekToken.Type != token.LEFT_BRACKET {
+		return nil
+	}
+	p.NextToken()
+	fl.Params = p.parseParameters()
+	p.NextToken()
+	fl.Body = p.parseBlockStatements()
+	return fl
+}
+
+//Parsing all the parameters inside of function declaration.
+func (p *Parser) parseParameters() []*ast.Identifier { //Current token will be  `(` when we enter this function
+	params := []*ast.Identifier{}
+
+	if p.peekToken.Type == token.RIGHT_BRACKET {
+		p.NextToken()
+		return params
+	}
+	p.NextToken()
+	param := &ast.Identifier{Token: p.currToken, Value: p.currToken.Literal}
+	params = append(params, param)
+	for p.peekToken.Type == token.COMMA {
+		p.NextToken() //Will go to next comma
+		p.NextToken() //Will reach to next param
+		param := &ast.Identifier{Token: p.currToken, Value: p.currToken.Literal}
+		params = append(params, param)
+	}
+	if p.peekToken.Type != token.RIGHT_BRACKET {
+		return nil
+	}
+	p.NextToken()
+	return params //Leave the function with currToken `)`
+}
+
+//Parsing function calls.
+//Function calls- <expression>(args). expression can be either an identifier pointing to a function literal or a function literal itself.And args is also expression.
+//We can have nested funciton literals inside of out function call as arguments.
+
+func (p *Parser) parseFunctionCall(function ast.Expression) ast.Expression { //While entering: currtoken would be `(` before the args
+	fc := &ast.FunctionCall{Token: p.currToken, Function: function}
+	fc.Arguments = p.parseArgs()
+	return fc
+}
+
+//Returning all expressions inside function call
+func (p *Parser) parseArgs() []ast.Expression {
+	args := []ast.Expression{}
+	if p.peekToken.Type == token.RIGHT_BRACKET {
+		p.NextToken()
+		return args
+	}
+	p.NextToken()
+	args = append(args, p.parseExpression(LOWEST))
+	for p.peekToken.Type == token.COMMA {
+		p.NextToken()
+		p.NextToken()
+		args = append(args, p.parseExpression(LOWEST))
+	}
+	if p.peekToken.Type != token.RIGHT_BRACKET {
+		return nil
+	}
+	p.NextToken() //Leaves at RIGHT BRACKER
+	return args
 }
