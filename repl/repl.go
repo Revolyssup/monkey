@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/Revolyssup/monkey/eval"
 	"github.com/Revolyssup/monkey/lexer"
 	"github.com/Revolyssup/monkey/parser"
 )
@@ -36,8 +37,11 @@ func StartRepl(in io.Reader, out io.Writer) {
 			printParserErrors(out, p.Errors())
 			continue
 		}
-		io.WriteString(out, program.String())
-		io.WriteString(out, "\n")
+		evalObj := eval.Eval(program)
+		if evalObj != nil {
+			io.WriteString(out, evalObj.Inspect())
+			io.WriteString(out, "\n")
+		}
 
 	}
 }
