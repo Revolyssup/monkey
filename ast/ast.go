@@ -48,7 +48,7 @@ func (p *Program) String() string {
 	return out.String()
 }
 
-/**Expressions will have- Identifiers/ Integer Literals**/
+/**Expressions will have- Identifiers/ Integer Literals / Booleans **/
 //Identifiers are token which hold some string like x,y,z...
 type Identifier struct {
 	Token token.Token
@@ -76,6 +76,22 @@ func (i *IntegerLiteral) TokenLiteral() string {
 }
 func (i *IntegerLiteral) String() string {
 	return i.Token.Literal
+}
+
+//Booleans
+type Boolean struct {
+	Token token.Token
+	Value bool
+}
+
+func (b *Boolean) expNode() {}
+func (i *Boolean) TokenLiteral() string {
+	return i.Token.Literal
+}
+func (b *Boolean) String() string {
+	var out bytes.Buffer
+	out.WriteString(b.TokenLiteral())
+	return out.String()
 }
 
 /***LET STATEMENT****/
@@ -141,10 +157,7 @@ func (es *ExpressionStatement) TokenLiteral() string {
 }
 func (es *ExpressionStatement) stateNode() {}
 func (es *ExpressionStatement) String() string {
-	var out bytes.Buffer
-	out.WriteString(es.TokenLiteral() + " " + es.Expression.TokenLiteral())
-
-	return out.String()
+	return es.Expression.String()
 }
 
 //PREFIX
@@ -162,7 +175,10 @@ func (pe *PrefixExpression) expNode() {}
 func (pe *PrefixExpression) String() string {
 	var out bytes.Buffer
 
-	out.WriteString("(" + pe.Operator + pe.RightExpression.String() + ")")
+	out.WriteString("(")
+	out.WriteString(pe.Operator)
+	out.WriteString(pe.RightExpression.String())
+	out.WriteString(")")
 	return out.String()
 }
 
@@ -182,6 +198,10 @@ func (pe *InfixExpression) TokenLiteral() string {
 func (ie *InfixExpression) String() string {
 	var out bytes.Buffer
 
-	out.WriteString("(" + ie.LeftExpression.String() + ie.Operator + ie.RightExpression.String() + ")")
+	out.WriteString("(")
+	out.WriteString(ie.LeftExpression.String())
+	out.WriteString(" " + ie.Operator + " ")
+	out.WriteString(ie.RightExpression.String())
+	out.WriteString(")")
 	return out.String()
 }
