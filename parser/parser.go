@@ -193,20 +193,23 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 	if !p.expectPeek(token.ASSIGN) {
 		return nil
 	}
-
-	for p.currToken.Type != token.SEMICOLON {
+	p.NextToken()
+	letstmt.Value = p.parseExpression(LOWEST)
+	for p.peekToken.Type != token.SEMICOLON {
 		p.NextToken()
 	}
-
+	p.NextToken()
 	return letstmt
 }
 
 func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	retstmt := &ast.ReturnStatement{Token: p.currToken}
-
-	for p.currToken.Type != token.SEMICOLON {
+	p.NextToken()
+	retstmt.ReturnValue = p.parseExpression(LOWEST)
+	for p.peekToken.Type != token.SEMICOLON {
 		p.NextToken()
 	}
+	p.NextToken()
 	return retstmt
 }
 

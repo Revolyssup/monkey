@@ -9,6 +9,12 @@ import (
 	"github.com/Revolyssup/monkey/parser"
 )
 
+func printParserErrors(out io.Writer, errors []string) {
+	for _, msg := range errors {
+		io.WriteString(out, "\t"+msg+"\n")
+	}
+}
+
 func StartRepl(in io.Reader, out io.Writer) {
 	buf := bufio.NewScanner(in)
 
@@ -26,11 +32,12 @@ func StartRepl(in io.Reader, out io.Writer) {
 		p := parser.New(l)
 
 		program := p.ParseProgram()
-		for _, stmt := range program.Statements {
-			fmt.Print(stmt.TokenLiteral())
+		if len(p.Errors()) != 0 {
+			printParserErrors(out, p.Errors())
+			continue
 		}
-		// for tok := l.NextToken(); tok.Type != token.EOF; tok = l.NextToken() {
-		// 	fmt.Printf("%+v\n", tok)
-		// }
+		io.WriteString(out, program.String())
+		io.WriteString(out, "\n")
+
 	}
 }
