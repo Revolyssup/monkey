@@ -66,6 +66,11 @@ func (p *Parser) peekPrecedence() int {
 	return LOWEST
 }
 
+func (p *Parser) noPrefixParseFnError(t token.TokenType) {
+	msg := fmt.Sprintf("no prefix parse function for %s found", t)
+	p.errors = append(p.errors, msg)
+}
+
 //Parsing expressions
 func (p *Parser) parseExpression(precedence int) ast.Expression {
 	prefix := p.prefixParsefuncns[p.currToken.Type]
@@ -117,6 +122,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefixParse(token.BANG, p.parsePrefixExpression)
 	p.registerPrefixParse(token.MINUS, p.parsePrefixExpression)
 	p.registerPrefixParse(token.LEFT_BRACKET, p.parseGroupedExpression)
+	p.registerPrefixParse(token.IF, p.parseIfExpression)
 
 	p.registerInfixParse(token.PLUS, p.parseInfixExpression)
 	p.registerInfixParse(token.MINUS, p.parseInfixExpression)
@@ -288,7 +294,48 @@ func (p *Parser) parseGroupedExpression() ast.Expression {
 
 }
 
-func (p *Parser) noPrefixParseFnError(t token.TokenType) {
-	msg := fmt.Sprintf("no prefix parse function for %s found", t)
-	p.errors = append(p.errors, msg)
+//Parsing Blocks
+func (p *Parser) parseBlockStatements() *ast.BlockStatement {
+	bs := &ast.BlockStatement{Token: p.currToken}
+	bs.Stmts = []ast.Statement{}
+
+	p.NextToken()
+
+	for p.currToken.Type != token.RIGHT_BRACE && p.currToken.Type != token.EOF {
+		stmt := p.parseStatement()
+		if stmt != nil {
+			bs.Stmts = append(bs.Stmts, stmt)
+		}
+		p.NextToken()
+	}
+	return bs
+}
+
+//IF_ELSE are expressions in monkey as they produce a value. Hence, if (x>3) 2; is equivalent to if (x>3) return 2;
+func (p *Parser) parseIfExpression() ast.Expression {
+	ife := &ast.IfExpression{Token: p.currToken}
+	if p.peekToken.Type != token.LEFT_BRACKET {
+		return nil
+	}
+	p.NextToken()
+
+	ife.Condition = p.parseExpression(LOWEST)
+
+	if p.peekToken.Type != token.LEFT_BRACE {
+		return nil
+	}
+
+	p.NextToken()
+	ife.MainStmt = p.parseBlockStatements()
+	//In case there is an else statement
+
+	if p.peekToken.Type == token.ELSE {
+		p.NextToken()
+		if p.peekToken.Type != token.LEFT_BRACE {
+			return nil
+		}
+		p.NextToken()
+		ife.AltStmt = p.parseBlockStatements()
+	}
+	return ife
 }

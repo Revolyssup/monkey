@@ -205,3 +205,50 @@ func (ie *InfixExpression) String() string {
 	out.WriteString(")")
 	return out.String()
 }
+
+//Block expressions are slice of statements ,nested under { []statements }
+type BlockStatement struct {
+	Token token.Token
+	Stmts []Statement
+}
+
+func (bs *BlockStatement) stateNode() {}
+func (bs *BlockStatement) TokenLiteral() string {
+	return bs.Token.Literal
+}
+
+func (bs *BlockStatement) String() string {
+	var out bytes.Buffer
+	for _, stmt := range bs.Stmts {
+		out.WriteString(stmt.String())
+	}
+	return out.String()
+}
+
+//If/Else expression
+type IfExpression struct {
+	Token     token.Token
+	Condition Expression
+	MainStmt  *BlockStatement
+	AltStmt   *BlockStatement
+}
+
+func (ife *IfExpression) expNode() {}
+func (ife *IfExpression) TokenLiteral() string {
+	return ife.Token.Literal
+}
+
+func (ife *IfExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("if")
+	out.WriteString(ife.Condition.String())
+	out.WriteString(" ")
+	out.WriteString(ife.MainStmt.String())
+
+	if ife.AltStmt != nil {
+		out.WriteString(" else ")
+		out.WriteString(ife.AltStmt.String())
+	}
+	return out.String()
+}
