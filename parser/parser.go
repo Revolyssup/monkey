@@ -195,7 +195,7 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 	}
 	p.NextToken()
 	letstmt.Value = p.parseExpression(LOWEST)
-	for p.peekToken.Type != token.SEMICOLON {
+	for p.peekToken.Type != token.SEMICOLON && p.currToken.Type != token.EOF {
 		p.NextToken()
 	}
 	p.NextToken()

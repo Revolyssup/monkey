@@ -7,6 +7,7 @@ import (
 
 	"github.com/Revolyssup/monkey/eval"
 	"github.com/Revolyssup/monkey/lexer"
+	"github.com/Revolyssup/monkey/obj"
 	"github.com/Revolyssup/monkey/parser"
 )
 
@@ -18,7 +19,7 @@ func printParserErrors(out io.Writer, errors []string) {
 
 func StartRepl(in io.Reader, out io.Writer) {
 	buf := bufio.NewScanner(in)
-
+	env := obj.NewEnvironment()
 	for {
 		fmt.Printf("\n[MONKEY]>>")
 		scanned := buf.Scan()
@@ -37,7 +38,8 @@ func StartRepl(in io.Reader, out io.Writer) {
 			printParserErrors(out, p.Errors())
 			continue
 		}
-		evalObj := eval.Eval(program)
+
+		evalObj := eval.Eval(program, env)
 		if evalObj != nil {
 			io.WriteString(out, evalObj.Inspect())
 			io.WriteString(out, "\n")
