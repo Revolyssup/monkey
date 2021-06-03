@@ -219,7 +219,7 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 
 	stmt.Expression = p.parseExpression(LOWEST)
 
-	if p.peekToken.Type == token.SEMICOLON { //Semicolon is not mandatory
+	if p.peekToken.Type == token.SEMICOLON && p.currToken.Type != token.EOF { //Semicolon is not mandatory
 		p.NextToken()
 	}
 	return stmt

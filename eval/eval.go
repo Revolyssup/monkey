@@ -77,8 +77,29 @@ func Eval(node ast.Node, env *obj.Env) obj.Object {
 			}
 			env.Set(node.Name.Value, val)
 		}
+	case *ast.FunctionLiteral:
+		{
+			args := node.Params
+			body := node.Body
+			return &obj.Function{Args: args, Body: body, Env: env}
+		}
+	case *ast.FunctionCall:
+		{
+			//Create the function object
+			fn := Eval(node.Function, env)
+			if isError(fn) {
+				return fn
+			}
+			//Create allt the argument objects
+			args := evalExpressions(node.Arguments, env)
+
+			if len(args) == 1 && isError(args[0]) {
+				return args[0]
+			}
+			return execFunction(fn, args)
+		}
 	}
-	return nil
+	return nil //handled by isError
 }
 
 func returnSingleBooleanInstance(input bool) *obj.Boolean {
@@ -302,4 +323,50 @@ func evalIdentifiers(node *ast.Identifier, env *obj.Env) obj.Object {
 		return newErr("Undefined variable: %s", node.Value)
 	}
 	return val
+}
+
+/****************/
+//To evaluate a list of expressions into monkey objects.
+
+func evalExpressions(node []ast.Expression, env *obj.Env) []obj.Object {
+	exps := []obj.Object{}
+
+	for _, exp := range node {
+		evaluated := Eval(exp, env)
+		if isError(evaluated) {
+			return []obj.Object{evaluated}
+		}
+		exps = append(exps, evaluated)
+	}
+	return exps
+}
+
+//This function will do two things:
+//1. It will pass the outer environments to the function such that if the function doesn't find a variable in its own environment, it checks in out env Object recursively
+//2. It passes the arguments given to the functions into functions's Env object.
+func extendFun(fn *obj.Function, args []obj.Object) *obj.Env {
+	env := obj.NewEnclosedEnvironment(fn.Env)
+	for i, param := range fn.Args {
+		env.Set(param.Value, args[i])
+	}
+	return env
+}
+
+//Will be called after function has been executed and a Return object has been recieved.
+func unwrapReturnValue(ob obj.Object) obj.Object {
+	if returnValue, ok := ob.(*obj.Return); ok {
+		return returnValue.Value
+	}
+	return ob
+}
+
+//Executing the function
+func execFunction(fn obj.Object, args []obj.Object) obj.Object {
+	function, ok := fn.(*obj.Function)
+	if !ok {
+		return newErr("not a function: %s", fn.DataType())
+	}
+	newenv := extendFun(function, args)
+	evaluated := Eval(function.Body, newenv)
+	return unwrapReturnValue(evaluated)
 }

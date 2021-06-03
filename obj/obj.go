@@ -1,15 +1,22 @@
 package obj
 
-import "fmt"
+import (
+	"bytes"
+	"fmt"
+	"strings"
+
+	"github.com/Revolyssup/monkey/ast"
+)
 
 type DataType string
 
 const (
-	INTEGER_OBJ = "Integer"
-	BOOLEAN_OBJ = "Bool"
-	NULL_OBJ    = "Null"
-	RETURN_OBJ  = "Return"
-	ERROR_OBJ   = "Error"
+	INTEGER_OBJ  = "Integer"
+	BOOLEAN_OBJ  = "Bool"
+	NULL_OBJ     = "Null"
+	RETURN_OBJ   = "Return"
+	ERROR_OBJ    = "Error"
+	FUNCTION_OBJ = "Function"
 )
 
 //All variables will be wrapped inside of an object-like struct.
@@ -85,6 +92,7 @@ func (err *Error) Inspect() string {
 
 type Env struct {
 	variables map[string]Object
+	outer     *Env
 }
 
 func (env *Env) Get(s string) (Object, bool) {
@@ -99,6 +107,43 @@ func (env *Env) Set(s string, ob Object) Object {
 
 func NewEnvironment() *Env {
 	s := make(map[string]Object)
-	env := &Env{variables: s}
+	env := &Env{variables: s, outer: nil}
 	return env
+}
+
+//This function will populate outer environments of function's environment object
+func NewEnclosedEnvironment(outer_env *Env) *Env {
+	env := NewEnvironment()
+	env.outer = outer_env
+	return env
+}
+
+/*****************/
+//FUNCTIONS
+type Function struct {
+	Args []*ast.Identifier
+	Body *ast.BlockStatement
+	Env  *Env
+}
+
+func (fn *Function) DataType() DataType {
+	return FUNCTION_OBJ
+}
+
+func (fn *Function) Inspect() string { //Returns all params
+	var out bytes.Buffer
+
+	params := []string{}
+
+	for _, p := range fn.Args {
+		params = append(params, p.String())
+	}
+
+	out.WriteString("fn(")
+	out.WriteString(strings.Join(params, ","))
+	out.WriteString(") {\n")
+	out.WriteString(fn.Body.String())
+	out.WriteString("}")
+
+	return out.String()
 }
