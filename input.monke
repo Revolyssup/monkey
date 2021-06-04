@@ -1,6 +1,11 @@
-let c=fn(a){
-    return a
+let a=fn(a,b){
+    a+b;
 }
-c(1)
+let b=3;
+a(2,3)
+#a(3,4)
+a(4,5)#
+b
+a(4,5)
 
 

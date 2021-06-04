@@ -14,6 +14,10 @@ type Lexer struct {
 func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
 	l.skipWhitespace()
+	if l.ch == '#' {
+		l.skipComment()
+		l.skipWhitespace()
+	}
 	switch l.ch {
 	case '=':
 		if l.peekChar() == '=' {
@@ -55,6 +59,7 @@ func (l *Lexer) NextToken() token.Token {
 		tok = newToken(token.LESS_THAN, l.ch)
 	case '>':
 		tok = newToken(token.GRTR_THAN, '>')
+
 	case 0:
 		tok.Literal = ""
 		tok.Type = token.EOF
@@ -68,6 +73,7 @@ func (l *Lexer) NextToken() token.Token {
 			tok.Type = token.INTEGER
 			return tok
 		} else {
+
 			tok = newToken(token.ILLEGAL, l.ch)
 		}
 	}
@@ -125,6 +131,18 @@ func (l *Lexer) skipWhitespace() {
 	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
 		l.read()
 	}
+}
+
+func (l *Lexer) skipComment() {
+	l.read()
+	for l.ch != '#' {
+		if l.ch == 0 {
+			return
+		}
+		l.read()
+	}
+	l.read()
+
 }
 
 //for two character token
