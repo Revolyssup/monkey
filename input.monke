@@ -1,0 +1,6 @@
+let c=fn(a){
+    return a
+}
+c(1)
+
+

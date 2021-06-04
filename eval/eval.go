@@ -90,6 +90,7 @@ func Eval(node ast.Node, env *obj.Env) obj.Object {
 			if isError(fn) {
 				return fn
 			}
+
 			//Create allt the argument objects
 			args := evalExpressions(node.Arguments, env)
 

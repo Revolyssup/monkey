@@ -11,7 +11,7 @@ import (
 	"github.com/Revolyssup/monkey/parser"
 )
 
-func printParserErrors(out io.Writer, errors []string) {
+func PrintParserErrors(out io.Writer, errors []string) {
 	for _, msg := range errors {
 		io.WriteString(out, "\t"+msg+"\n")
 	}
@@ -20,6 +20,7 @@ func printParserErrors(out io.Writer, errors []string) {
 func StartRepl(in io.Reader, out io.Writer) {
 	buf := bufio.NewScanner(in)
 	env := obj.NewEnvironment()
+
 	for {
 		fmt.Printf("\n[MONKEY]>>")
 		scanned := buf.Scan()
@@ -35,7 +36,7 @@ func StartRepl(in io.Reader, out io.Writer) {
 
 		program := p.ParseProgram()
 		if len(p.Errors()) != 0 {
-			printParserErrors(out, p.Errors())
+			PrintParserErrors(out, p.Errors())
 			continue
 		}
 
