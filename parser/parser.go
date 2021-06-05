@@ -73,14 +73,15 @@ func (p *Parser) noPrefixParseFnError(t token.TokenType) {
 
 //Parsing expressions
 func (p *Parser) parseExpression(precedence int) ast.Expression {
+
 	prefix := p.prefixParsefuncns[p.currToken.Type]
+
 	if prefix == nil {
 		p.noPrefixParseFnError(p.currToken.Type)
 		return nil
 	}
 
 	leftExp := prefix()
-
 	for p.peekToken.Type != token.SEMICOLON && p.peekPrecedence() > precedence {
 		infix := p.infixParsefuncns[p.peekToken.Type]
 		if infix == nil {
@@ -98,6 +99,7 @@ func (p *Parser) parsePrefixExpression() ast.Expression {
 	pexp.RightExpression = p.parseExpression(PREFIX)
 	return pexp
 }
+
 func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	iexp := &ast.InfixExpression{Token: p.currToken, LeftExpression: left, Operator: p.currToken.Literal}
 	precedence := p.currPrecedence()
@@ -125,6 +127,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefixParse(token.IF, p.parseIfExpression)
 	p.registerPrefixParse(token.FUNCTION, p.parseFunctionLiterals)
 	p.registerPrefixParse(token.STRING, p.parseStringLiteral)
+	p.registerPrefixParse(token.LEFT_LARGE_BRACKET, p.parseArray)
 
 	p.registerInfixParse(token.PLUS, p.parseInfixExpression)
 	p.registerInfixParse(token.MINUS, p.parseInfixExpression)
@@ -174,6 +177,7 @@ func (p *Parser) parseStatement() ast.Statement {
 		{
 			return p.parseReturnStatement()
 		}
+
 	default:
 		{
 			return p.parseExpressionStatement()
@@ -285,6 +289,28 @@ func (p *Parser) parseBoolean() ast.Expression {
 	}
 	boolexp.Value = val
 	return boolexp
+}
+
+func (p *Parser) parseArray() ast.Expression { //Enter with currtoken set as '['
+	arr := &ast.ArrayLiteral{Token: p.currToken}
+	exp := []ast.Expression{}
+	p.NextToken()
+	for p.currToken.Type != token.RIGHT_LARGE_BRACKET && p.currToken.Type != token.EOF {
+		tempExp := p.parseExpression(LOWEST)
+
+		exp = append(exp, tempExp)
+		if p.peekToken.Type != token.COMMA {
+			p.errors = append(p.errors, "No comma after element in array.")
+			return arr
+		}
+		p.NextToken()
+		p.NextToken()
+	}
+
+	p.NextToken()
+	fmt.Println("EXITING AS: " + p.currToken.Literal)
+	arr.Value = exp
+	return arr
 }
 
 //For parenthesis(grouped expressions)

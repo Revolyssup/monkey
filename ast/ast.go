@@ -93,6 +93,27 @@ func (s *StringLiteral) String() string {
 	return s.Token.Literal
 }
 
+//Array
+type ArrayLiteral struct {
+	Token token.Token
+	Value []Expression
+}
+
+func (arr *ArrayLiteral) expNode() {}
+func (arr *ArrayLiteral) TokenLiteral() string {
+	return arr.Token.Literal
+}
+
+func (arr *ArrayLiteral) String() string {
+	var out bytes.Buffer
+	out.WriteString("[")
+	for _, ele := range arr.Value {
+		out.WriteString(ele.String() + ",")
+	}
+	out.WriteString("]")
+	return out.String()
+}
+
 //Booleans
 type Boolean struct {
 	Token token.Token

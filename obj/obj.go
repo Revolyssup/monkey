@@ -180,8 +180,10 @@ func (b *Builtin) Inspect() string {
 }
 
 /**************/
-//Arraya- Different data types can be added to array.
-type Array []Object
+//Array- Different data types can be added to array.
+type Array struct {
+	Arr []Object
+}
 
 func (a *Array) DataType() DataType {
 	return ARRAYS_OBJ
@@ -189,7 +191,7 @@ func (a *Array) DataType() DataType {
 func (a *Array) Inspect() string {
 	var out bytes.Buffer
 	out.WriteString("[")
-	for _, ele := range *a {
+	for _, ele := range a.Arr {
 		out.WriteString(ele.Inspect() + ",")
 
 	}

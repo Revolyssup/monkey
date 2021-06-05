@@ -514,3 +514,19 @@ func TestStringLiteralExpression(t *testing.T) {
 		t.Errorf("literal.Value not %q. got=%q", "hello world", literal.Value)
 	}
 }
+
+func TestArray(t *testing.T) {
+	input := `[5,1,12,]`
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+	stmt := program.Statements[0].(*ast.ExpressionStatement)
+	literal, ok := stmt.Expression.(*ast.ArrayLiteral)
+	if !ok {
+		t.Fatalf("exp not *ast.ArrayLiteral. got=%T", stmt.Expression)
+	}
+	if literal.String() != `[5,1,12,]` {
+		t.Errorf("literal.String() not %q. got=%q", `[5,1,12,]`, literal.String())
+	}
+}

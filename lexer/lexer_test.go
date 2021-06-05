@@ -18,7 +18,7 @@ func TestNextToken(t *testing.T) {
 	5 < 10 > 5==5!=67;
 	"foobar"
 	"foo bar"
-	
+	[1,]
 	 `
 	tests := []struct {
 		Type    token.TokenType
@@ -78,6 +78,10 @@ func TestNextToken(t *testing.T) {
 		{token.SEMICOLON, ";"},
 		{token.STRING, "foobar"},
 		{token.STRING, "foo bar"},
+		{token.LEFT_LARGE_BRACKET, "["},
+		{token.INTEGER, "1"},
+		{token.COMMA, ","},
+		{token.RIGHT_LARGE_BRACKET, "]"},
 
 		{token.EOF, ""},
 	}

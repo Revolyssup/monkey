@@ -10,7 +10,7 @@ import (
 
 //Mapping to Builtin Functions in monkey
 var fns = map[string]*obj.Builtin{
-	"len": &obj.Builtin{
+	"len": {
 		Fn: length,
 	},
 }
@@ -50,6 +50,12 @@ func Eval(node ast.Node, env *obj.Env) obj.Object {
 	case *ast.Boolean:
 		{
 			return returnSingleBooleanInstance(node.Value)
+		}
+	case *ast.ArrayLiteral:
+		{
+			arr := &obj.Array{}
+			arr.Arr = evalExpressions(node.Value, env)
+			return arr
 		}
 		//Evaluating prefix expressions
 	case *ast.PrefixExpression:
