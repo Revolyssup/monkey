@@ -12,6 +12,7 @@ type DataType string
 
 const (
 	INTEGER_OBJ  = "Integer"
+	STRING_OBJ   = "STRING"
 	BOOLEAN_OBJ  = "Bool"
 	NULL_OBJ     = "Null"
 	RETURN_OBJ   = "Return"
@@ -37,6 +38,19 @@ func (integer *Integer) DataType() DataType {
 }
 func (integer *Integer) Inspect() string {
 	return fmt.Sprintf("%d", integer.Value)
+}
+
+//Implementing String
+type String struct {
+	Value string
+}
+
+func (s *String) DataType() DataType {
+	return STRING_OBJ
+}
+
+func (s *String) Inspect() string {
+	return s.Value
 }
 
 //Implementing Booleans

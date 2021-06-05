@@ -35,6 +35,10 @@ func Eval(node ast.Node, env *obj.Env) obj.Object {
 		{
 			return &obj.Integer{Value: node.Value}
 		}
+	case *ast.StringLiteral:
+		{
+			return &obj.String{Value: node.Value}
+		}
 	case *ast.Boolean:
 		{
 			return returnSingleBooleanInstance(node.Value)
@@ -99,6 +103,7 @@ func Eval(node ast.Node, env *obj.Env) obj.Object {
 			}
 			return execFunction(fn, args)
 		}
+
 	}
 	return nil //handled by isError
 }
@@ -188,6 +193,10 @@ func evalInfixExpression(op string, left obj.Object, right obj.Object) obj.Objec
 		{
 			return evalInteger(op, left, right)
 		}
+	case left.DataType() == obj.STRING_OBJ && right.DataType() == obj.STRING_OBJ:
+		{
+			return evalString(op, left, right)
+		}
 	// Directly compare the objects and return boolean. As all booleans are pointing to a single instance, it swiftly works for booleans
 	case op == "==":
 		{
@@ -249,6 +258,24 @@ func evalInteger(op string, left obj.Object, right obj.Object) obj.Object {
 	default:
 		return newErr("unknown operator: %s %s %s",
 			left.DataType(), op, right.DataType())
+	}
+
+}
+
+func evalString(op string, left obj.Object, right obj.Object) obj.Object {
+	leftstr := left.(*obj.String).Value
+	rightstr := right.(*obj.String).Value
+	switch op {
+	case "+":
+		{
+			total := leftstr + rightstr
+			return &obj.String{Value: total}
+		}
+	default:
+		{
+			return newErr("unknown operator: %s %s %s",
+				left.DataType(), op, right.DataType())
+		}
 	}
 
 }

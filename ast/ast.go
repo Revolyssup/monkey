@@ -79,6 +79,20 @@ func (i *IntegerLiteral) String() string {
 	return i.Token.Literal
 }
 
+//String
+type StringLiteral struct {
+	Token token.Token
+	Value string
+}
+
+func (s *StringLiteral) expNode() {}
+func (s *StringLiteral) TokenLiteral() string {
+	return s.Token.Literal
+}
+func (s *StringLiteral) String() string {
+	return s.Token.Literal
+}
+
 //Booleans
 type Boolean struct {
 	Token token.Token

@@ -16,6 +16,8 @@ func TestNextToken(t *testing.T) {
 
 	!-/*5;
 	5 < 10 > 5==5!=67;
+	"foobar"
+	"foo bar"
 	
 	 `
 	tests := []struct {
@@ -74,6 +76,9 @@ func TestNextToken(t *testing.T) {
 		{token.NOT_EQUAL, "!="},
 		{token.INTEGER, "67"},
 		{token.SEMICOLON, ";"},
+		{token.STRING, "foobar"},
+		{token.STRING, "foo bar"},
+
 		{token.EOF, ""},
 	}
 

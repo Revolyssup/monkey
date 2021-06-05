@@ -51,7 +51,7 @@ const (
 
 	//literal
 	INTEGER = "INT"
-
+	STRING  = "STRING"
 	//special
 	ILLEGAL = "ILLEGAL"
 	EOF     = "EOF"
