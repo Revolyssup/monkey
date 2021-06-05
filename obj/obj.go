@@ -11,13 +11,14 @@ import (
 type DataType string
 
 const (
-	INTEGER_OBJ  = "Integer"
-	STRING_OBJ   = "STRING"
-	BOOLEAN_OBJ  = "Bool"
-	NULL_OBJ     = "Null"
-	RETURN_OBJ   = "Return"
-	ERROR_OBJ    = "Error"
-	FUNCTION_OBJ = "Function"
+	INTEGER_OBJ      = "Integer"
+	STRING_OBJ       = "STRING"
+	BOOLEAN_OBJ      = "Bool"
+	NULL_OBJ         = "Null"
+	RETURN_OBJ       = "Return"
+	ERROR_OBJ        = "Error"
+	FUNCTION_OBJ     = "Function"
+	BUILTIN_FUNC_OBJ = "Builtin_function	`"
 )
 
 //All variables will be wrapped inside of an object-like struct.
@@ -160,4 +161,19 @@ func (fn *Function) Inspect() string { //Returns all params
 	out.WriteString("}")
 
 	return out.String()
+}
+
+/***********/
+//Builtin Functions
+type BuiltinFn func(args ...Object) Object
+
+type Builtin struct {
+	Fn BuiltinFn
+}
+
+func (b *Builtin) DataType() DataType {
+	return BUILTIN_FUNC_OBJ
+}
+func (b *Builtin) Inspect() string {
+	return "monkey in-built function"
 }

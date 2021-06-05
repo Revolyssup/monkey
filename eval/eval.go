@@ -2,10 +2,24 @@ package eval
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Revolyssup/monkey/ast"
 	"github.com/Revolyssup/monkey/obj"
 )
+
+//Builtin Functions in monkey
+var fns = map[string]*obj.Builtin{
+	"len": &obj.Builtin{
+		Fn: func(args ...obj.Object) obj.Object {
+			s, ok := args[0].(*obj.String)
+			if !ok {
+				return &obj.Error{ErrMsg: "No string in arguments"}
+			}
+			return &obj.Integer{Value: int64(len(s.Value))}
+		},
+	},
+}
 
 //Because different "true" are not different so creating new instance everytime a bool instance is created is a waste of space. SO we point all booleans of one type
 //to a single instance. Same for null
@@ -271,6 +285,16 @@ func evalString(op string, left obj.Object, right obj.Object) obj.Object {
 			total := leftstr + rightstr
 			return &obj.String{Value: total}
 		}
+	case "-":
+		{
+			i := strings.Index(leftstr, rightstr)
+			if i == -1 {
+				return newErr("No right substring found in left string")
+			}
+			len := len(rightstr)
+			total := leftstr[0:i] + leftstr[i+len:]
+			return &obj.String{Value: total}
+		}
 	default:
 		{
 			return newErr("unknown operator: %s %s %s",
@@ -347,8 +371,15 @@ func isError(ob obj.Object) bool {
 //Identifiers
 func evalIdentifiers(node *ast.Identifier, env *obj.Env) obj.Object {
 	val, ok := env.Get(node.Value)
+
 	if !ok {
-		return newErr("Undefined variable: %s", node.Value)
+		bf, ok2 := fns[node.Value]
+
+		if !ok2 {
+			return newErr("Undefined variable: %s", node.Value)
+		}
+		return bf
+
 	}
 	return val
 }
@@ -392,6 +423,10 @@ func unwrapReturnValue(ob obj.Object) obj.Object {
 func execFunction(fn obj.Object, args []obj.Object) obj.Object {
 	function, ok := fn.(*obj.Function)
 	if !ok {
+		builin, ok2 := fn.(*obj.Builtin)
+		if ok2 {
+			return builin.Fn(args...)
+		}
 		return newErr("not a function: %s", fn.DataType())
 	}
 	newenv := extendFun(function, args)
