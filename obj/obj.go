@@ -18,7 +18,8 @@ const (
 	RETURN_OBJ       = "Return"
 	ERROR_OBJ        = "Error"
 	FUNCTION_OBJ     = "Function"
-	BUILTIN_FUNC_OBJ = "Builtin_function	`"
+	BUILTIN_FUNC_OBJ = "Builtin_function"
+	ARRAYS_OBJ       = "Array"
 )
 
 //All variables will be wrapped inside of an object-like struct.
@@ -176,4 +177,22 @@ func (b *Builtin) DataType() DataType {
 }
 func (b *Builtin) Inspect() string {
 	return "monkey in-built function"
+}
+
+/**************/
+//Arraya- Different data types can be added to array.
+type Array []Object
+
+func (a *Array) DataType() DataType {
+	return ARRAYS_OBJ
+}
+func (a *Array) Inspect() string {
+	var out bytes.Buffer
+	out.WriteString("[")
+	for _, ele := range *a {
+		out.WriteString(ele.Inspect() + ",")
+
+	}
+	out.WriteString("]")
+	return out.String()
 }

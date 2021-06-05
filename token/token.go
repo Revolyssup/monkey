@@ -41,11 +41,12 @@ const (
 	COMMA     = ","
 	SEMICOLON = ";"
 
-	LEFT_BRACKET  = "("
-	RIGHT_BRACKET = ")"
-	LEFT_BRACE    = "{"
-	RIGHT_BRACE   = "}"
-
+	LEFT_BRACKET        = "("
+	RIGHT_BRACKET       = ")"
+	LEFT_BRACE          = "{"
+	RIGHT_BRACE         = "}"
+	LEFT_LARGE_BRACKET  = "["
+	RIGHT_LARGE_BRACKET = "]"
 	//identifier
 	IDENTIFIER = "IDENT"
 

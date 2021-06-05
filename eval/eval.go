@@ -8,16 +8,10 @@ import (
 	"github.com/Revolyssup/monkey/obj"
 )
 
-//Builtin Functions in monkey
+//Mapping to Builtin Functions in monkey
 var fns = map[string]*obj.Builtin{
 	"len": &obj.Builtin{
-		Fn: func(args ...obj.Object) obj.Object {
-			s, ok := args[0].(*obj.String)
-			if !ok {
-				return &obj.Error{ErrMsg: "No string in arguments"}
-			}
-			return &obj.Integer{Value: int64(len(s.Value))}
-		},
+		Fn: length,
 	},
 }
 
@@ -373,6 +367,7 @@ func evalIdentifiers(node *ast.Identifier, env *obj.Env) obj.Object {
 	val, ok := env.Get(node.Value)
 
 	if !ok {
+		//If its not user defined, check if its a builtin function
 		bf, ok2 := fns[node.Value]
 
 		if !ok2 {
@@ -432,4 +427,17 @@ func execFunction(fn obj.Object, args []obj.Object) obj.Object {
 	newenv := extendFun(function, args)
 	evaluated := Eval(function.Body, newenv)
 	return unwrapReturnValue(evaluated)
+}
+
+/***Built in functions in Monkey*****/
+
+func length(args ...obj.Object) obj.Object {
+	if len(args) != 1 {
+		return newErr("wrong number of arguments. got=%d, want=1", len(args))
+	}
+	s, ok := args[0].(*obj.String)
+	if !ok {
+		return &obj.Error{ErrMsg: "No string in arguments"}
+	}
+	return &obj.Integer{Value: int64(len(s.Value))}
 }
