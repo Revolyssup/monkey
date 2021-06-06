@@ -14,6 +14,7 @@ var keywords = map[string]TokenType{
 	"false":  FALSE,
 	"if":     IF,
 	"else":   ELSE,
+	"for":    FOR,
 	"return": RETURN,
 }
 
@@ -26,6 +27,7 @@ const (
 	RETURN   = "RETURN"
 	IF       = "IF"
 	ELSE     = "ELSE"
+	FOR      = "FOR"
 	//Operators
 	PLUS      = "+"
 	MINUS     = "-"

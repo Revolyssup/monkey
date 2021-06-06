@@ -82,6 +82,10 @@ func Eval(node ast.Node, env *obj.Env) obj.Object {
 		{
 			return evalIfExpression(node, env)
 		}
+	case *ast.ForExpression:
+		{
+			return evalForExpressions(node, env)
+		}
 	case *ast.ReturnStatement:
 		{
 			val := Eval(node.ReturnValue, env)
@@ -326,6 +330,17 @@ func evalIfExpression(node *ast.IfExpression, env *obj.Env) obj.Object {
 	return NULL
 }
 
+//FOR- Similar to If, just goes back, instead of continuing
+func evalForExpressions(node *ast.ForExpression, env *obj.Env) obj.Object {
+	cond := Eval(node.Condition, env)
+	var ans obj.Object
+	for isTruthy(cond) {
+		fmt.Println("BRUH")
+		ans = Eval(node.Stmt, env)
+		cond = Eval(node.Condition, env)
+	}
+	return ans
+}
 func isTruthy(object obj.Object) bool {
 	switch object {
 	case NULL:

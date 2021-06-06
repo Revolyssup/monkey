@@ -462,7 +462,30 @@ func TestIfExpression(t *testing.T) {
 		t.Errorf("exp.Alternative.Statements was  nil. got=%+v", exp.AltStmt)
 	}
 }
+func TestForExpression(t *testing.T) {
+	input := `for (x < y) { x }`
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
 
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not ast.ExpressionStatement. got=%T",
+			program.Statements[0])
+	}
+	exp, ok := stmt.Expression.(*ast.ForExpression)
+	if !ok {
+		t.Fatalf("stmt.Expression is not ast.ForExpression. got=%T",
+			stmt.Expression)
+	}
+	fmt.Println(exp.String())
+	if len(exp.Stmt.Stmts) != 1 {
+		t.Errorf("consequence is not 1 statements. got=%d\n",
+			len(exp.Stmt.Stmts))
+	}
+
+}
 func TestFunctionLiteralParsing(t *testing.T) {
 	input := `fn(x, y) { x + y; }`
 	l := lexer.New(input)

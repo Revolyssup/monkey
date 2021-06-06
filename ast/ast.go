@@ -290,6 +290,26 @@ func (ife *IfExpression) String() string {
 	return out.String()
 }
 
+//For expression
+type ForExpression struct {
+	Token     token.Token
+	Condition Expression
+	Stmt      *BlockStatement
+}
+
+func (fe *ForExpression) expNode() {}
+func (fe *ForExpression) TokenLiteral() string {
+	return fe.Token.Literal
+}
+func (fe *ForExpression) String() string {
+	var out bytes.Buffer
+	out.WriteString("for ")
+	out.WriteString(fe.Condition.String())
+	out.WriteString(" ")
+	out.WriteString(fe.Stmt.String())
+	return out.String()
+}
+
 //Function Literalss fn(params){body}
 type FunctionLiteral struct {
 	Token  token.Token //fn

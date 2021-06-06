@@ -130,6 +130,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefixParse(token.MINUS, p.parsePrefixExpression)
 	p.registerPrefixParse(token.LEFT_BRACKET, p.parseGroupedExpression)
 	p.registerPrefixParse(token.IF, p.parseIfExpression)
+	p.registerPrefixParse(token.FOR, p.parseForExpression)
 	p.registerPrefixParse(token.FUNCTION, p.parseFunctionLiterals)
 	p.registerPrefixParse(token.STRING, p.parseStringLiteral)
 	p.registerPrefixParse(token.LEFT_LARGE_BRACKET, p.parseArray)
@@ -388,6 +389,23 @@ func (p *Parser) parseIfExpression() ast.Expression {
 		ife.AltStmt = p.parseBlockStatements()
 	}
 	return ife
+}
+
+//Parsing For expressions-Looks exactly like If expressions
+func (p *Parser) parseForExpression() ast.Expression {
+	fore := &ast.ForExpression{Token: p.currToken}
+	if p.peekToken.Type != token.LEFT_BRACKET {
+		return nil
+	}
+	p.NextToken()
+
+	fore.Condition = p.parseExpression(LOWEST)
+	if p.peekToken.Type != token.LEFT_BRACE {
+		return nil
+	}
+	p.NextToken()
+	fore.Stmt = p.parseBlockStatements()
+	return fore
 }
 
 //Parsing functino literals.Function declarations in go are just like expressions. fn(..params){body}
