@@ -26,6 +26,7 @@ func main() {
 			panic(err)
 		}
 		run(fileact, os.Stdout)
+
 		return
 	}
 	fmt.Printf("Welcome to monkey %s\n", user.Username)
@@ -50,4 +51,8 @@ func run(input string, out io.Writer) {
 		io.WriteString(out, evalObj.Inspect())
 		io.WriteString(out, "\n")
 	}
+}
+
+func deleteFile() {
+
 }

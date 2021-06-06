@@ -4,6 +4,9 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/Revolyssup/monkey/eval"
 	"github.com/Revolyssup/monkey/lexer"
@@ -16,11 +19,19 @@ func PrintParserErrors(out io.Writer, errors []string) {
 		io.WriteString(out, "\t"+msg+"\n")
 	}
 }
-
+func CloseHandler() {
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		fmt.Println("\r- Ctrl+C pressed in Terminal. Monkey says bye!")
+		os.Exit(0)
+	}()
+}
 func StartRepl(in io.Reader, out io.Writer) {
 	buf := bufio.NewScanner(in)
 	env := obj.NewEnvironment()
-
+	CloseHandler()
 	for {
 		fmt.Printf("\n[MONKEY]>>")
 		scanned := buf.Scan()
