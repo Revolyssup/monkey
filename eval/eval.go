@@ -1,7 +1,9 @@
 package eval
 
 import (
+	"bytes"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/Revolyssup/monkey/ast"
@@ -12,6 +14,9 @@ import (
 var fns = map[string]*obj.Builtin{
 	"len": {
 		Fn: length,
+	},
+	"print": {
+		Fn: print,
 	},
 }
 
@@ -86,6 +91,10 @@ func Eval(node ast.Node, env *obj.Env) obj.Object {
 		{
 
 			return evalIdentifiers(node, env)
+		}
+	case *ast.ArrElement:
+		{
+			return evalArrayElement(node, env)
 		}
 	case *ast.LetStatement:
 		{
@@ -385,6 +394,28 @@ func evalIdentifiers(node *ast.Identifier, env *obj.Env) obj.Object {
 	return val
 }
 
+func evalArrayElement(node *ast.ArrElement, env *obj.Env) obj.Object {
+	name := node.Name
+	val, ok := env.Get(name.String())
+	if !ok {
+		return newErr("Array %s not found", name.String())
+
+	}
+	val2, ok := val.(*obj.Array)
+	if !ok {
+		return newErr("Index operation requires array!")
+	}
+	i, err := strconv.Atoi(node.Index.String())
+	if err != nil {
+		return newErr("Index is not an integer")
+	}
+	if i >= len(val2.Arr) {
+		return newErr("Index out of bound")
+	}
+	ans := val2.Arr[i]
+	return ans
+}
+
 /****************/
 //To evaluate a list of expressions into monkey objects.
 
@@ -446,4 +477,13 @@ func length(args ...obj.Object) obj.Object {
 		return &obj.Error{ErrMsg: "No string in arguments"}
 	}
 	return &obj.Integer{Value: int64(len(s.Value))}
+}
+
+func print(args ...obj.Object) obj.Object {
+	var out bytes.Buffer
+	for _, arg := range args {
+		out.WriteString(arg.Inspect())
+	}
+	fmt.Println(out.String())
+	return &obj.Null{}
 }

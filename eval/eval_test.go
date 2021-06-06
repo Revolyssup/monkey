@@ -355,3 +355,24 @@ func TestBuiltinFunctions(t *testing.T) {
 		}
 	}
 }
+func TestArrIndex(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{"let a=[1,2,3,];a[1]", 2},
+		{`let b=["Ashish",2,3,];b[0]`, "Ashish"},
+	}
+	for i, tt := range tests {
+		eval := testEval(tt.input)
+		if i == 0 && eval.DataType() != obj.INTEGER_OBJ {
+			t.Errorf("Got datatype %T instead of integer", eval.DataType())
+			continue
+		}
+		if i == 1 && eval.DataType() != obj.STRING_OBJ {
+			t.Errorf("Got datatype %T instead of string", eval.DataType())
+			continue
+		}
+
+	}
+}

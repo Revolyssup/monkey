@@ -2,6 +2,7 @@ package ast
 
 import (
 	"bytes"
+	"fmt"
 	"strings"
 
 	"github.com/Revolyssup/monkey/token"
@@ -340,5 +341,25 @@ func (fc *FunctionCall) String() string {
 	}
 	out.WriteString(strings.Join(args, ", "))
 	out.WriteString(")")
+	return out.String()
+}
+
+//Array Element
+type ArrElement struct {
+	Token token.Token //IDENT
+	Name  Expression
+	Index Expression
+}
+
+func (ae *ArrElement) expNode() {}
+func (ae *ArrElement) TokenLiteral() string {
+	return ae.Name.TokenLiteral()
+}
+func (ae *ArrElement) String() string {
+	var out bytes.Buffer
+	out.WriteString(ae.Name.TokenLiteral())
+	out.WriteString("[")
+	out.WriteString(fmt.Sprint(ae.Index))
+	out.WriteString("]")
 	return out.String()
 }

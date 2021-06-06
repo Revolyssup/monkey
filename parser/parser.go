@@ -35,21 +35,23 @@ const (
 	PRODUCT     // *
 	PREFIX      // -X and !X
 	CALL        // func(x)
+	INDEX
 )
 
 //mapping each token to its appropriate precedence
 var precedence = map[token.TokenType]int{
-	token.EQUAL:         EQUALS,
-	token.NOT_EQUAL:     EQUALS,
-	token.LESS_THAN:     LESSGREATER,
-	token.GRTR_THAN:     LESSGREATER,
-	token.MINUS:         SUMSUB,
-	token.PLUS:          SUMSUB,
-	token.SLASH:         PRODUCT,
-	token.ASTERIK:       PRODUCT,
-	token.BANG:          PREFIX,
-	token.RIGHT_BRACKET: LOWEST,
-	token.LEFT_BRACKET:  CALL,
+	token.EQUAL:              EQUALS,
+	token.NOT_EQUAL:          EQUALS,
+	token.LESS_THAN:          LESSGREATER,
+	token.GRTR_THAN:          LESSGREATER,
+	token.MINUS:              SUMSUB,
+	token.PLUS:               SUMSUB,
+	token.SLASH:              PRODUCT,
+	token.ASTERIK:            PRODUCT,
+	token.BANG:               PREFIX,
+	token.RIGHT_BRACKET:      LOWEST,
+	token.LEFT_BRACKET:       CALL,
+	token.LEFT_LARGE_BRACKET: INDEX,
 }
 
 //functins to compare precedences of tokens
@@ -82,13 +84,16 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 	}
 
 	leftExp := prefix()
+	// fmt.Println("LEFT EXP IS: " + leftExp.String())
 	for p.peekToken.Type != token.SEMICOLON && p.peekPrecedence() > precedence {
+		// fmt.Println("Coming in loop cuz peektoken is : " + p.peekToken.Literal)
 		infix := p.infixParsefuncns[p.peekToken.Type]
 		if infix == nil {
 			return leftExp
 		}
 		p.NextToken()
 		leftExp = infix(leftExp)
+		// fmt.Println("LEFT EXP after innfix IS: " + leftExp.String())
 	}
 	return leftExp
 }
@@ -138,6 +143,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerInfixParse(token.LESS_THAN, p.parseInfixExpression)
 	p.registerInfixParse(token.GRTR_THAN, p.parseInfixExpression)
 	p.registerInfixParse(token.LEFT_BRACKET, p.parseFunctionCall)
+	p.registerInfixParse(token.LEFT_LARGE_BRACKET, p.parseArrElement)
 	return p
 }
 
@@ -308,9 +314,19 @@ func (p *Parser) parseArray() ast.Expression { //Enter with currtoken set as '['
 	}
 
 	p.NextToken()
-	fmt.Println("EXITING AS: " + p.currToken.Literal)
 	arr.Value = exp
 	return arr
+}
+
+func (p *Parser) parseArrElement(id ast.Expression) ast.Expression {
+	arrele := &ast.ArrElement{Token: p.currToken, Name: id}
+	p.NextToken()
+	arrele.Index = p.parseExpression(LOWEST)
+	if p.peekToken.Type != token.RIGHT_LARGE_BRACKET {
+		return nil
+	}
+	p.NextToken()
+	return arrele
 }
 
 //For parenthesis(grouped expressions)
