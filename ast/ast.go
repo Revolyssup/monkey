@@ -131,7 +131,9 @@ func (arr *ArrayLiteral) String() string {
 	for _, ele := range arr.Value {
 		out.WriteString(ele.String() + ",")
 	}
-	out.WriteString("]")
+	temp := strings.TrimSuffix(out.String(), ",") + "]"
+	out.Reset()
+	out.WriteString(temp)
 	return out.String()
 }
 

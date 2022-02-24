@@ -539,7 +539,7 @@ func TestStringLiteralExpression(t *testing.T) {
 }
 
 func TestArray(t *testing.T) {
-	input := `[5,1,12,]`
+	input := `[5,1,12]`
 	l := lexer.New(input)
 	p := New(l)
 	program := p.ParseProgram()
@@ -549,11 +549,29 @@ func TestArray(t *testing.T) {
 	if !ok {
 		t.Fatalf("exp not *ast.ArrayLiteral. got=%T", stmt.Expression)
 	}
-	if literal.String() != `[5,1,12,]` {
-		t.Errorf("literal.String() not %q. got=%q", `[5,1,12,]`, literal.String())
+	if literal.String() != `[5,1,12]` {
+		t.Errorf("literal.String() not %q. got=%q", `[5,1,12]`, literal.String())
 	}
 }
 
+// func TestObject(t *testing.T) {
+// 	input := `{
+// 		"name:"Ashish",
+// 		"roll":2
+// 	}`
+// 	l := lexer.New(input)
+// 	p := New(l)
+// 	program := p.ParseProgram()
+// 	checkParserErrors(t, p)
+// 	stmt := program.Statements[0].(*ast.ExpressionStatement)
+// 	literal, ok := stmt.Expression.(*ast.ObjectLiteral)
+// 	if !ok {
+// 		t.Fatalf("exp not *ast.ArrayLiteral. got=%T", stmt.Expression)
+// 	}
+// 	if literal.String() != `[5,1,12,]` {
+// 		t.Errorf("literal.String() not %q. got=%q", `[5,1,12,]`, literal.String())
+// 	}
+// }
 func TestArrayEle(t *testing.T) {
 	input := `a[0]`
 	l := lexer.New(input)

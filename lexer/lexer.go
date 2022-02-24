@@ -38,8 +38,18 @@ func (l *Lexer) NextToken() token.Token {
 	case ')':
 		tok = newToken(token.RIGHT_BRACKET, l.ch)
 	case '{':
+		if l.peekChar() == '{' {
+			l.read()
+			tok = newToken(token.LEFT_OBJECT_BRACE, l.ch)
+			break
+		}
 		tok = newToken(token.LEFT_BRACE, l.ch)
 	case '}':
+		if l.peekChar() == '}' {
+			l.read()
+			tok = newToken(token.RIGHT_OBJECT_BRACE, l.ch)
+			break
+		}
 		tok = newToken(token.RIGHT_BRACE, l.ch)
 	case '-':
 		tok = newToken(token.MINUS, l.ch)

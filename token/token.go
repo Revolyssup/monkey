@@ -47,6 +47,8 @@ const (
 	RIGHT_BRACKET       = ")"
 	LEFT_BRACE          = "{"
 	RIGHT_BRACE         = "}"
+	LEFT_OBJECT_BRACE   = "{{"
+	RIGHT_OBJECT_BRACE  = "}}"
 	LEFT_LARGE_BRACKET  = "["
 	RIGHT_LARGE_BRACKET = "]"
 	KEY_VAL_SEP         = ":"
