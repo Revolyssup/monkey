@@ -52,6 +52,8 @@ const (
 	LEFT_LARGE_BRACKET  = "["
 	RIGHT_LARGE_BRACKET = "]"
 	KEY_VAL_SEP         = ":"
+	INCREMENT           = "++"
+	DECREMENT           = "--"
 	//identifier
 	IDENTIFIER = "IDENT"
 

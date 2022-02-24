@@ -1,8 +1,12 @@
 let name = {{
     1:"Ashish",
-    1:"Nidhi"
+    2:"Nidhi"
 }};
 let printBookName = fn(book) {
-    return book[1];
+    print(book[1])
+    if (book[1] != "Nidhi"){
+        print("ashish: "+book[1])
+    }
 };
+let i=0;
 printBookName(name);

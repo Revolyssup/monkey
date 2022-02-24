@@ -28,6 +28,11 @@ func (l *Lexer) NextToken() token.Token {
 		}
 		tok = newToken(token.ASSIGN, l.ch)
 	case '+':
+		if l.peekChar() == '+' {
+			l.read()
+			tok = newToken(token.INCREMENT, l.ch)
+			break
+		}
 		tok = newToken(token.PLUS, l.ch)
 	case ',':
 		tok = newToken(token.COMMA, l.ch)
@@ -52,6 +57,11 @@ func (l *Lexer) NextToken() token.Token {
 		}
 		tok = newToken(token.RIGHT_BRACE, l.ch)
 	case '-':
+		if l.peekChar() == '-' {
+			l.read()
+			tok = newToken(token.DECREMENT, l.ch)
+			break
+		}
 		tok = newToken(token.MINUS, l.ch)
 	case '*':
 		tok = newToken(token.ASTERIK, l.ch)

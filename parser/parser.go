@@ -410,7 +410,6 @@ func (p *Parser) parseIfExpression() ast.Expression {
 	p.NextToken()
 
 	ife.Condition = p.parseExpression(LOWEST)
-
 	if p.peekToken.Type != token.LEFT_BRACE {
 		return nil
 	}

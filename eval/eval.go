@@ -222,6 +222,19 @@ func evalMinusOperator(right *obj.Integer) obj.Object {
 //INFIX
 func evalInfixExpression(op string, left obj.Object, right obj.Object) obj.Object {
 	switch {
+	case left.DataType() != right.DataType():
+		{
+			return newErr("type mismatch: %s %s %s", left.DataType(), op, right.DataType())
+		}
+	// Directly compare the objects and return boolean. As all booleans are pointing to a single instance, it swiftly works for booleans
+	case op == "==":
+		{
+			return returnSingleBooleanInstance(left.Inspect() == right.Inspect())
+		}
+	case op == "!=":
+		{
+			return returnSingleBooleanInstance(left.Inspect() != right.Inspect())
+		}
 	//If we have integers on either side
 	case left.DataType() == obj.INTEGER_OBJ && right.DataType() == obj.INTEGER_OBJ:
 		{
@@ -231,19 +244,7 @@ func evalInfixExpression(op string, left obj.Object, right obj.Object) obj.Objec
 		{
 			return evalString(op, left, right)
 		}
-	// Directly compare the objects and return boolean. As all booleans are pointing to a single instance, it swiftly works for booleans
-	case op == "==":
-		{
-			return returnSingleBooleanInstance(left == right)
-		}
-	case op == "!=":
-		{
-			return returnSingleBooleanInstance(left != right)
-		}
-	case left.DataType() != right.DataType():
-		{
-			return newErr("type mismatch: %s %s %s", left.DataType(), op, right.DataType())
-		}
+
 	default:
 		{
 			return newErr("unknown operator: %s %s %s", left.DataType(), op, right.DataType())
@@ -363,7 +364,7 @@ func isTruthy(object obj.Object) bool {
 		}
 	default:
 		{
-			return true
+			return false
 		}
 	}
 
@@ -463,9 +464,6 @@ func evalMapExpressions(node map[ast.Expression]ast.Expression, env *obj.Env) ma
 		evaluated := Eval(exp, env)
 		if isError(evaluated) {
 			return map[string]obj.Object{key.String(): evaluated}
-		}
-		if exps[key.String()] != nil {
-			delete(exps, key.String())
 		}
 		exps[key.String()] = evaluated
 	}
