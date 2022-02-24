@@ -1,0 +1,8 @@
+let name = {
+    1:"Ashish",
+    1:"Nidhi"
+};
+let printBookName = fn(book) {
+    return book[1];
+};
+printBookName(name);

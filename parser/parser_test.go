@@ -561,7 +561,7 @@ func TestArrayEle(t *testing.T) {
 	program := p.ParseProgram()
 	checkParserErrors(t, p)
 	stmt := program.Statements[0].(*ast.ExpressionStatement)
-	literal, ok := stmt.Expression.(*ast.ArrElement)
+	literal, ok := stmt.Expression.(*ast.ArrObjElement)
 	if !ok {
 		t.Fatalf("exp not *ast.ArrEle. got=%T", stmt.Expression)
 	}

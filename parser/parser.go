@@ -52,6 +52,7 @@ var precedence = map[token.TokenType]int{
 	token.RIGHT_BRACKET:      LOWEST,
 	token.LEFT_BRACKET:       CALL,
 	token.LEFT_LARGE_BRACKET: INDEX,
+	token.LEFT_BRACE:         INDEX,
 }
 
 //functins to compare precedences of tokens
@@ -134,6 +135,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefixParse(token.FUNCTION, p.parseFunctionLiterals)
 	p.registerPrefixParse(token.STRING, p.parseStringLiteral)
 	p.registerPrefixParse(token.LEFT_LARGE_BRACKET, p.parseArray)
+	p.registerPrefixParse(token.LEFT_BRACE, p.parseObject)
 
 	p.registerInfixParse(token.PLUS, p.parseInfixExpression)
 	p.registerInfixParse(token.MINUS, p.parseInfixExpression)
@@ -144,7 +146,8 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerInfixParse(token.LESS_THAN, p.parseInfixExpression)
 	p.registerInfixParse(token.GRTR_THAN, p.parseInfixExpression)
 	p.registerInfixParse(token.LEFT_BRACKET, p.parseFunctionCall)
-	p.registerInfixParse(token.LEFT_LARGE_BRACKET, p.parseArrElement)
+	p.registerInfixParse(token.LEFT_LARGE_BRACKET, p.parseArrObjElement)
+	p.registerInfixParse(token.LEFT_BRACE, p.parseArrObjElement)
 	return p
 }
 
@@ -307,6 +310,11 @@ func (p *Parser) parseArray() ast.Expression { //Enter with currtoken set as '['
 
 		exp = append(exp, tempExp)
 		if p.peekToken.Type != token.COMMA {
+			if p.peekToken.Type == token.RIGHT_LARGE_BRACKET {
+				p.NextToken()
+				arr.Value = exp
+				return arr
+			}
 			p.errors = append(p.errors, "No comma after element in array.")
 			return arr
 		}
@@ -319,8 +327,8 @@ func (p *Parser) parseArray() ast.Expression { //Enter with currtoken set as '['
 	return arr
 }
 
-func (p *Parser) parseArrElement(id ast.Expression) ast.Expression {
-	arrele := &ast.ArrElement{Token: p.currToken, Name: id}
+func (p *Parser) parseArrObjElement(id ast.Expression) ast.Expression {
+	arrele := &ast.ArrObjElement{Token: p.currToken, Name: id}
 	p.NextToken()
 	arrele.Index = p.parseExpression(LOWEST)
 	if p.peekToken.Type != token.RIGHT_LARGE_BRACKET {
@@ -328,6 +336,37 @@ func (p *Parser) parseArrElement(id ast.Expression) ast.Expression {
 	}
 	p.NextToken()
 	return arrele
+}
+func (p *Parser) parseObject() ast.Expression { //Enter with currtoken set as '{'
+	obj := &ast.ObjectLiteral{Token: p.currToken}
+	exp := map[ast.Expression]ast.Expression{}
+	p.NextToken()
+	for p.currToken.Type != token.RIGHT_BRACE && p.currToken.Type != token.EOF {
+		keyExp := p.parseExpression(LOWEST)
+		p.NextToken()
+		if p.currToken.Type != token.KEY_VAL_SEP {
+			p.errors = append(p.errors, "No seperator found between key-values")
+			return obj
+		}
+		p.NextToken()
+		valueExp := p.parseExpression(LOWEST)
+		exp[keyExp] = valueExp
+		if p.peekToken.Type != token.COMMA {
+			if p.peekToken.Type == token.RIGHT_BRACE {
+				p.NextToken()
+				obj.Value = exp
+				return obj
+			}
+			p.errors = append(p.errors, "No comma after element in object, found "+p.peekToken.Literal)
+			return obj
+		}
+		p.NextToken()
+		p.NextToken()
+	}
+
+	p.NextToken()
+	obj.Value = exp
+	return obj
 }
 
 //For parenthesis(grouped expressions)

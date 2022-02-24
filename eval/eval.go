@@ -62,6 +62,13 @@ func Eval(node ast.Node, env *obj.Env) obj.Object {
 			arr.Arr = evalExpressions(node.Value, env)
 			return arr
 		}
+	case *ast.ObjectLiteral:
+		{
+			arr := &obj.Obj{}
+
+			arr.OBJ = evalMapExpressions(node.Value, env)
+			return arr
+		}
 		//Evaluating prefix expressions
 	case *ast.PrefixExpression:
 		{
@@ -96,9 +103,9 @@ func Eval(node ast.Node, env *obj.Env) obj.Object {
 
 			return evalIdentifiers(node, env)
 		}
-	case *ast.ArrElement:
+	case *ast.ArrObjElement:
 		{
-			return evalArrayElement(node, env)
+			return evalObjArrayElement(node, env)
 		}
 	case *ast.LetStatement:
 		{
@@ -335,7 +342,6 @@ func evalForExpressions(node *ast.ForExpression, env *obj.Env) obj.Object {
 	cond := Eval(node.Condition, env)
 	var ans obj.Object
 	for isTruthy(cond) {
-		fmt.Println("BRUH")
 		ans = Eval(node.Stmt, env)
 		cond = Eval(node.Condition, env)
 	}
@@ -409,16 +415,20 @@ func evalIdentifiers(node *ast.Identifier, env *obj.Env) obj.Object {
 	return val
 }
 
-func evalArrayElement(node *ast.ArrElement, env *obj.Env) obj.Object {
+func evalObjArrayElement(node *ast.ArrObjElement, env *obj.Env) obj.Object {
 	name := node.Name
 	val, ok := env.Get(name.String())
 	if !ok {
-		return newErr("Array %s not found", name.String())
+		return newErr("Array or Object with name %s not found", name.String())
 
 	}
 	val2, ok := val.(*obj.Array)
 	if !ok {
-		return newErr("Index operation requires array!")
+		val3, ok := val.(*obj.Obj)
+		if !ok {
+			return newErr("Index operation requires array or object!")
+		}
+		return val3.OBJ[node.Index.String()]
 	}
 	i, err := strconv.Atoi(node.Index.String())
 	if err != nil {
@@ -443,6 +453,21 @@ func evalExpressions(node []ast.Expression, env *obj.Env) []obj.Object {
 			return []obj.Object{evaluated}
 		}
 		exps = append(exps, evaluated)
+	}
+	return exps
+}
+func evalMapExpressions(node map[ast.Expression]ast.Expression, env *obj.Env) map[string]obj.Object {
+	exps := map[string]obj.Object{}
+
+	for key, exp := range node {
+		evaluated := Eval(exp, env)
+		if isError(evaluated) {
+			return map[string]obj.Object{key.String(): evaluated}
+		}
+		if exps[key.String()] != nil {
+			delete(exps, key.String())
+		}
+		exps[key.String()] = evaluated
 	}
 	return exps
 }

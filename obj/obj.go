@@ -20,6 +20,7 @@ const (
 	FUNCTION_OBJ     = "Function"
 	BUILTIN_FUNC_OBJ = "Builtin_function"
 	ARRAYS_OBJ       = "Array"
+	OBJECT_OBJ       = "Object"
 )
 
 //All variables will be wrapped inside of an object-like struct.
@@ -196,5 +197,25 @@ func (a *Array) Inspect() string {
 
 	}
 	out.WriteString("]")
+	return out.String()
+}
+
+/**************/
+//Object
+type Obj struct {
+	OBJ map[string]Object
+}
+
+func (o *Obj) DataType() DataType {
+	return OBJECT_OBJ
+}
+func (o *Obj) Inspect() string {
+	var out bytes.Buffer
+	out.WriteString("{")
+	for key, val := range o.OBJ {
+		out.WriteString(key + ":" + val.Inspect() + ",\n")
+
+	}
+	out.WriteString("}")
 	return out.String()
 }

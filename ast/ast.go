@@ -94,6 +94,26 @@ func (s *StringLiteral) String() string {
 	return s.Token.Literal
 }
 
+//Object- key-value pairs
+type ObjectLiteral struct {
+	Token token.Token
+	Value map[Expression]Expression
+}
+
+func (obj *ObjectLiteral) expNode() {}
+func (obj *ObjectLiteral) TokenLiteral() string {
+	return obj.Token.Literal
+}
+func (obj *ObjectLiteral) String() string {
+	var out bytes.Buffer
+	out.WriteString("{")
+	for key, value := range obj.Value {
+		out.WriteString(key.String() + ":" + value.String() + ",\n")
+	}
+	out.WriteString("}")
+	return out.String()
+}
+
 //Array
 type ArrayLiteral struct {
 	Token token.Token
@@ -365,17 +385,17 @@ func (fc *FunctionCall) String() string {
 }
 
 //Array Element
-type ArrElement struct {
+type ArrObjElement struct {
 	Token token.Token //IDENT
 	Name  Expression
 	Index Expression
 }
 
-func (ae *ArrElement) expNode() {}
-func (ae *ArrElement) TokenLiteral() string {
+func (ae *ArrObjElement) expNode() {}
+func (ae *ArrObjElement) TokenLiteral() string {
 	return ae.Name.TokenLiteral()
 }
-func (ae *ArrElement) String() string {
+func (ae *ArrObjElement) String() string {
 	var out bytes.Buffer
 	out.WriteString(ae.Name.TokenLiteral())
 	out.WriteString("[")
