@@ -43,3 +43,13 @@ builds for us and interpret it “on the fly”, without any preprocessing or co
 
     # in case other hash is not encountered, all the code after first one will be commented.
 ```
+
+### Objects-
+```monkey
+    Objects are enclosed in double-curly brackets instead of single. 
+
+    let a ={{
+        "name:"ashish"
+    }}
+
+```
