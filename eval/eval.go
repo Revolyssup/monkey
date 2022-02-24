@@ -26,6 +26,7 @@ var (
 	TRUE  = &obj.Boolean{Value: true}
 	FALSE = &obj.Boolean{Value: false}
 	NULL  = &obj.Null{}
+	// POSITIVE
 )
 
 //It take in the AST ,starting from the root node. And depending on the type of Node, calls other functions which evaluate and then call Eval recursively.
